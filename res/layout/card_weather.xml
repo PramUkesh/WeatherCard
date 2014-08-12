@@ -2,7 +2,8 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/card_background_shadow">
 
     <LinearLayout
         android:orientation="horizontal"
@@ -10,9 +11,10 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:id="@+id/iv_weather" />
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/iv_weather"
+            android:paddingLeft="15dp" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -76,10 +78,6 @@
         android:gravity="right">
 
         <ImageButton
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="20dp"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/ib_more"

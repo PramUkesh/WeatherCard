@@ -15,6 +15,8 @@ import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import cn.fython.weathercard.data.Weather;
+
 public class WeatherTools {
 
     private static final String URL_SINA = "http://php.weather.sina.com.cn/xml.php?city=%s&password=DJOYnieT8234jlsK&day=%d";

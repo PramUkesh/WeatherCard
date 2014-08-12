@@ -1,4 +1,4 @@
-package cn.fython.weathercard.support;
+package cn.fython.weathercard.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +43,10 @@ public class Weather {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public JSONObject getJSONObject () {
+        return data;
     }
 
     public String toJSONString() {
