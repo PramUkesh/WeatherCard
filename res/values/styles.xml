@@ -1,8 +1,13 @@
 <resources>
 
-    <!-- Application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:actionBarStyle">@style/ActionBarTheme</item>
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="ActionBarTheme" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:height">60dip</item>
+        <item name="android:background">#00000000</item>
     </style>
 
 </resources>
