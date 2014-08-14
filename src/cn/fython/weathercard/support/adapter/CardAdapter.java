@@ -85,8 +85,18 @@ public class CardAdapter extends BaseAdapter {
         }
 
         mHolder.tv_city.setText(mList.getName(i));
-        mHolder.tv_max_tem.setText(mList.get(i).get(Weather.Field.Temperature0) + "°C");
-        mHolder.tv_min_tem.setText(mList.get(i).get(Weather.Field.Temperature1) + "°C");
+        mHolder.tv_max_tem.setText(
+                String.format(
+                        mContext.getString(R.string.temperature_c),
+                        mList.get(i).get(Weather.Field.Temperature0)
+                )
+        );
+        mHolder.tv_min_tem.setText(
+                String.format(
+                        mContext.getString(R.string.temperature_c),
+                        mList.get(i).get(Weather.Field.Temperature1)
+                )
+        );
         mHolder.tv_status.setText(mList.get(i).get(Weather.Field.Status0));
         mHolder.tv_date.setText(
                 String.format(mContext.getString(R.string.refresh_date),
