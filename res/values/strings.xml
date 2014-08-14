@@ -4,7 +4,11 @@
     <string name="app_name">天气卡片</string>
     <string name="search_hint">输入城市名称....</string>
     <string name="refresh_date">%s 更新</string>
+    <string name="refresh_finished">刷新完毕。</string>
     <string name="error_network_null">由于网络问题，无法获取天气信息。</string>
     <string name="error_city_not_found">找不到该城市，请核对城市名称是否正确。</string>
+    <string-array name="card_more_menu">
+        <item>刷新</item>
+    </string-array>
 
 </resources>

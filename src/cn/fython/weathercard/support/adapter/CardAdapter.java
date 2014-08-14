@@ -42,6 +42,18 @@ public class CardAdapter extends BaseAdapter {
         return i - 1;
     }
 
+    public void setItem(int i, Weather weather) {
+        mList.set(i, weather);
+    }
+
+    public void addItem(Weather weather) {
+        mList.add(weather);
+    }
+
+    public void removeItem(int i) {
+        mList.remove(i);
+    }
+
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
         ViewHolder mHolder;

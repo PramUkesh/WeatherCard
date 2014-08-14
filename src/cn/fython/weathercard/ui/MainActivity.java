@@ -2,14 +2,15 @@ package cn.fython.weathercard.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -45,7 +46,9 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
     private float mLastY = -1.0f;
 
-    public static final int FIELD_NULL = 0, FIELD_NETWORK_NULL = 1, FIELD_CITY_NOT_FOUND = 2, FIELD_ADD_CARD = 3;
+    public static final int FIELD_NULL = 0, FIELD_NETWORK_NULL = 1,
+            FIELD_CITY_NOT_FOUND = 2, FIELD_ADD_CARD = 3, FIELD_ADAPTER_NOTIFY_DATA_CHANGED = 4,
+            FIELD_REFERSH_FINISHED = 5;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -145,7 +148,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
                 new CardAdapter.OnMoreButtonClickListener() {
                     @Override
                     public void onMoreButtonClick(int position) {
-                        Log.i("OnMoreButtonClick", "position:" + position);
+                        showMoreMenu(position);
                     }
                 }
         );
@@ -179,6 +182,34 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         }
 
         return false;
+    }
+
+    private void showMoreMenu(final int position){
+        new AlertDialog.Builder(this).setItems(getResources().getStringArray(R.array.card_more_menu),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int id) {
+                        switch (id) {
+                            case 0:
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            mAdapter.setItem(position, mList.getAfterRefreshing(position));
+                                            mUIHandler.sendEmptyMessage(FIELD_ADAPTER_NOTIFY_DATA_CHANGED);
+                                        } catch (IOException e) {
+                                            mUIHandler.sendEmptyMessage(FIELD_NETWORK_NULL);
+                                            e.printStackTrace();
+                                        } catch (CityNotFoundException e) {
+                                            mUIHandler.sendEmptyMessage(FIELD_CITY_NOT_FOUND);
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }.start();
+                                break;
+                        }
+                    }
+                }
+        ).show();
     }
 
     public class CheckTask extends AsyncTask<Void, Void, Weather> {
@@ -242,10 +273,19 @@ public class MainActivity extends Activity implements View.OnTouchListener {
                             Toast.LENGTH_SHORT)
                             .show();
                     break;
+                case FIELD_REFERSH_FINISHED:
+                    Toast.makeText(mContext,
+                            mContext.getString(R.string.refresh_finished),
+                            Toast.LENGTH_SHORT)
+                            .show();
+                    break;
                 case FIELD_ADD_CARD:
                     Bundle data = msg.getData();
                     mList.add(new Weather(data.getString("jsonString")));
                     refreshListView();
+                    break;
+                case FIELD_ADAPTER_NOTIFY_DATA_CHANGED:
+                    mAdapter.notifyDataSetChanged();
                     break;
             }
         }
