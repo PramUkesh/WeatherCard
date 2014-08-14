@@ -19,10 +19,6 @@ public class Weather {
 
     private JSONObject data;
 
-    public Weather() {
-        data = new JSONObject();
-    }
-
     public Weather(String jsonstr) {
         try {
             data = new JSONObject(jsonstr);

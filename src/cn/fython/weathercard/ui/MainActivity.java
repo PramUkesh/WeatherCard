@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +60,14 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.layout_main);
+        Drawable backgroundRes = Utility.getWallpaperBackground(getApplicationContext());
+        if (Build.VERSION.SDK_INT >= 16) {
+            l.setBackground(backgroundRes);
+        } else {
+            l.setBackgroundDrawable(backgroundRes);
+        }
 
         mList = new WeatherList();
         mUIHandler = new UIHandler(getApplicationContext());

@@ -2,14 +2,22 @@ package cn.fython.weathercard.support;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.WallpaperManager;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Window;
 import android.view.WindowManager;
 
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+
+import cn.fython.weathercard.R;
 
 public class Utility {
 
@@ -30,6 +38,23 @@ public class Utility {
             result = context.getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+    }
+
+    public static Drawable getWallpaperBackground(Context context) {
+        WallpaperManager wm = WallpaperManager.getInstance(context);
+        Drawable backgroundD = wm.getDrawable();
+
+        DisplayMetrics dm = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getMetrics(dm);
+
+        Bitmap bitmap = ((BitmapDrawable) backgroundD).getBitmap();
+        Bitmap b = Bitmap.createBitmap(bitmap, 0, 0, dm.widthPixels, dm.heightPixels);
+
+        Drawable colorD = new ColorDrawable(context.getResources().getColor(R.color.windowsTranslucentColor));
+        Drawable[] arrD = new Drawable[] {new BitmapDrawable(b), colorD};
+        LayerDrawable lD = new LayerDrawable(arrD);
+        return lD;
     }
 
     @TargetApi(19)
