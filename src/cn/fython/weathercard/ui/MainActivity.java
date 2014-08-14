@@ -2,39 +2,64 @@ package cn.fython.weathercard.ui;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.AdapterView;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 import cn.fython.weathercard.R;
 import cn.fython.weathercard.data.Weather;
 import cn.fython.weathercard.data.WeatherList;
+import cn.fython.weathercard.support.CityNotFoundException;
 import cn.fython.weathercard.support.Utility;
 import cn.fython.weathercard.support.WeatherTools;
 import cn.fython.weathercard.support.adapter.CardAdapter;
 import cn.fython.weathercard.view.SwipeDismissListView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements View.OnTouchListener {
 
 	private static SwipeDismissListView mListView;
+    private static EditText mSearchEditText;
     private static CardAdapter mAdapter;
 
+    public static UIHandler mUIHandler;
+
     private WeatherList mList;
+
+    private float mLastY = -1.0f;
+
+    public static final int FIELD_NULL = 0, FIELD_NETWORK_NULL = 1, FIELD_CITY_NOT_FOUND = 2, FIELD_ADD_CARD = 3;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        if (Build.VERSION.SDK_INT >= 19) {
+            Utility.enableTint(this, new ColorDrawable(getResources().getColor(R.color.transparent)));
+        }
+
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-        initActionBar();
         mList = new WeatherList();
+        mUIHandler = new UIHandler(getApplicationContext());
+
+        initActionBar();
         initListView();
         refreshListView();
 
@@ -53,6 +78,24 @@ public class MainActivity extends Activity {
         View v = LayoutInflater.from(
                 new ContextThemeWrapper(MainActivity.this, android.R.style.Theme_Holo_Light)
         ).inflate(R.layout.actionbar_main, null);
+
+        mSearchEditText = (EditText) v.findViewById(R.id.editText);
+        mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_SEARCH || i == EditorInfo.IME_ACTION_NEXT) {
+                    if (mSearchEditText.getText().toString().trim().length() < 1) {
+                        mSearchEditText.clearFocus();
+                    } else {
+                        createSampleWeatherCard(mSearchEditText.getText().toString());
+                    }
+                    mSearchEditText.setText("");
+                    return true;
+                }
+                return false;
+            }
+        });
+
         ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         actionBar.setCustomView(v, layoutParams);
@@ -61,7 +104,7 @@ public class MainActivity extends Activity {
     private void initListView() {
         mListView = (SwipeDismissListView) findViewById(R.id.listView);
         View view = new View(this);
-        ViewGroup.LayoutParams p = new ViewGroup.LayoutParams(
+        ListView.LayoutParams p = new ListView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 Utility.getActionBarHeight(this)
         );
@@ -70,15 +113,18 @@ public class MainActivity extends Activity {
             p.height += Utility.getStatusBarHeight(this);
         }
 
+        p.height += 10;
+
         view.setLayoutParams(p);
 
-        // mListView.addHeaderView(view); //这里出现了奇怪的问题 一添加就报错
+        mListView.addHeaderView(view);
 
+        mListView.setOnTouchListener(this);
         mListView.setOnDismissCallback(new SwipeDismissListView.OnDismissCallback() {
 
             @Override
             public void onDismiss(int dismissPosition) {
-                mList.remove(dismissPosition);
+                mList.remove(dismissPosition - 1);
                 refreshListView();
             }
 
@@ -106,6 +152,35 @@ public class MainActivity extends Activity {
         mListView.setAdapter(mAdapter);
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent ev) {
+
+        switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                mLastY = ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mLastY == -1.0f) break;
+
+                float y = ev.getY();
+
+                if (y < mLastY - 10f) {
+                    getActionBar().hide();
+                } else if (y > mLastY + 10f) {
+                    getActionBar().show();
+                }
+
+                mLastY = y;
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                mLastY = -1.0f;
+                break;
+        }
+
+        return false;
+    }
+
     public class CheckTask extends AsyncTask<Void, Void, Weather> {
 
         public String cityName;
@@ -113,14 +188,68 @@ public class MainActivity extends Activity {
 
         @Override
         protected Weather doInBackground(Void... voids) {
-            return WeatherTools.getWeatherByCity(cityName, days);
+            try {
+                return WeatherTools.getWeatherByCity(cityName, days);
+            } catch (IOException e) {
+                mUIHandler.sendEmptyMessage(FIELD_NETWORK_NULL);
+                e.printStackTrace();
+                return null;
+            } catch (CityNotFoundException e) {
+                mUIHandler.sendEmptyMessage(FIELD_CITY_NOT_FOUND);
+                e.printStackTrace();
+                return null;
+            }
         }
 
         @Override
         protected void onPostExecute(Weather weather) {
-            mList.add(weather);
-            refreshListView();
+            if (weather != null) {
+                Message msg = new Message();
+                msg.what = FIELD_ADD_CARD;
+                Bundle data = new Bundle();
+                data.putString("jsonString", weather.toJSONString());
+                msg.setData(data);
+                mUIHandler.sendMessage(msg);
+            }
         }
 
     }
+
+    public class UIHandler extends Handler {
+
+        private Context mContext;
+
+        public UIHandler(Context context) {
+            this.mContext = context;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case FIELD_NULL:
+                    /* Handler Default Value */
+                    /* Do nothing */
+                    break;
+                case FIELD_NETWORK_NULL:
+                    Toast.makeText(mContext,
+                            mContext.getString(R.string.error_network_null),
+                            Toast.LENGTH_SHORT)
+                            .show();
+                    break;
+                case FIELD_CITY_NOT_FOUND:
+                    Toast.makeText(mContext,
+                            mContext.getString(R.string.error_city_not_found),
+                            Toast.LENGTH_SHORT)
+                            .show();
+                    break;
+                case FIELD_ADD_CARD:
+                    Bundle data = msg.getData();
+                    mList.add(new Weather(data.getString("jsonString")));
+                    refreshListView();
+                    break;
+            }
+        }
+
+    };
+
 }

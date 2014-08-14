@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/card_background_shadow">
+    android:background="@drawable/card_background_training_raised">
 
     <LinearLayout
         android:orientation="horizontal"
@@ -78,11 +78,11 @@
         android:gravity="right">
 
         <ImageButton
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:id="@+id/ib_more"
-            android:src="@drawable/ic_menu_more"
-            android:background="#00000000"/>
+            android:src="@drawable/ic_btn_more"
+            android:background="@drawable/btn_more_bg"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -6,8 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
+import cn.fython.weathercard.support.CityNotFoundException;
 import cn.fython.weathercard.support.WeatherTools;
 
 public class WeatherList {
@@ -52,13 +54,13 @@ public class WeatherList {
         return array.get(position);
     }
 
-    public Weather getAfterRefreshing(int position) {
+    public Weather getAfterRefreshing(int position) throws IOException, CityNotFoundException {
         Weather w = WeatherTools.getWeatherByCity(array.get(position).get(Weather.Field.City), 0);
         array.set(position, w);
         return w;
     }
 
-    public WeatherList refreshAll() {
+    public WeatherList refreshAll() throws IOException, CityNotFoundException {
         for (int i = 0; i < array.size(); i++) {
             array.set(i, WeatherTools.getWeatherByCity(array.get(i).get(Weather.Field.City), 0));
         }

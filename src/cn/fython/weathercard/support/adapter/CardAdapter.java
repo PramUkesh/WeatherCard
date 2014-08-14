@@ -32,13 +32,13 @@ public class CardAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return mList.get(i);
+    public Weather getItem(int i) {
+        return mList.get(i - 1);
     }
 
     @Override
     public long getItemId(int i) {
-        return i;
+        return i - 1;
     }
 
     @Override

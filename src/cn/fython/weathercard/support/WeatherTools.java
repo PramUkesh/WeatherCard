@@ -27,7 +27,7 @@ public class WeatherTools {
             "gm", "yd"
     };
 
-    public static Weather getWeatherByCity(String cityName, int days) {
+    public static Weather getWeatherByCity(String cityName, int days) throws IOException, CityNotFoundException {
         String urlStr = null;
         try {
             urlStr = String.format(URL_SINA, URLEncoder.encode(cityName, "GBK"), days);
@@ -50,7 +50,17 @@ public class WeatherTools {
             for (int i = 0; i < nodes.length; i++) {
                 try {
                     data.put(nodes[i], map.get(nodes[i]));
+                    if (i == 0) {
+                        if (map.get(nodes[i]) == null) {
+                            throw new CityNotFoundException();
+                        }
+                    }
                 } catch (JSONException e) {
+                    if (i == 0) {
+                        if (map.get(nodes[i]) == null) {
+                            throw new CityNotFoundException();
+                        }
+                    }
                     e.printStackTrace();
                 }
             }
@@ -64,7 +74,7 @@ public class WeatherTools {
             return null;
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
+            throw new IOException("网络错误");
         }
 
         return w;
