@@ -1,7 +1,6 @@
 package cn.fython.weathercard.ui;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,8 +35,10 @@ import cn.fython.weathercard.support.Utility;
 import cn.fython.weathercard.support.WeatherTools;
 import cn.fython.weathercard.support.adapter.CardAdapter;
 import cn.fython.weathercard.view.SwipeDismissListView;
+import me.imid.swipebacklayout.lib.SwipeBackLayout;
+import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
-public class MainActivity extends Activity implements View.OnTouchListener {
+public class MainActivity extends SwipeBackActivity implements View.OnTouchListener {
 
 	private static SwipeDismissListView mListView;
     private static EditText mSearchEditText;
@@ -52,10 +53,11 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
     public static final int FIELD_NULL = 0, FIELD_NETWORK_NULL = 1,
             FIELD_CITY_NOT_FOUND = 2, FIELD_ADD_CARD = 3, FIELD_ADAPTER_NOTIFY_DATA_CHANGED = 4,
-            FIELD_REFERSH_FINISHED = 5;
+            FIELD_REFRESH_FINISHED = 5;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        // Enable SystemBarTint for SDK >=19
         if (Build.VERSION.SDK_INT >= 19) {
             Utility.enableTint(this, new ColorDrawable(getResources().getColor(R.color.transparent)));
         }
@@ -63,6 +65,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+        // Set up activity background
         RelativeLayout l = (RelativeLayout) findViewById(R.id.layout_main);
         Drawable backgroundRes = Utility.getWallpaperBackground(getApplicationContext());
         if (Build.VERSION.SDK_INT >= 16) {
@@ -71,19 +74,31 @@ public class MainActivity extends Activity implements View.OnTouchListener {
             l.setBackgroundDrawable(backgroundRes);
         }
 
+        // Init data
         mDataHelper = new DataHelper(getApplicationContext());
         mList = mDataHelper.readFromInternal();
         mUIHandler = new UIHandler(getApplicationContext());
 
+        // Init UI
+        initSwipeBackLayout();
         initActionBar();
         initListView();
-        refreshAllWeatherCard();
+        refreshAllWeatherCard(false);
 
 	}
 
+    private void initSwipeBackLayout() {
+        SwipeBackLayout swipeBackLayout = getSwipeBackLayout();
+        swipeBackLayout.setEdgeTrackingEnabled(SwipeBackLayout.EDGE_LEFT | SwipeBackLayout.EDGE_RIGHT);
+    }
+
     private void initActionBar() {
         ActionBar actionBar = getActionBar();
+
+        // Hide title & icon
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+
+        // Set up custom view
         View v = LayoutInflater.from(
                 new ContextThemeWrapper(MainActivity.this, android.R.style.Theme_Holo_Light)
         ).inflate(R.layout.actionbar_main, null);
@@ -112,6 +127,8 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
     private void initListView() {
         mListView = (SwipeDismissListView) findViewById(R.id.listView);
+
+        // Add header to mListView
         View view = new View(this);
         ListView.LayoutParams p = new ListView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -123,11 +140,10 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         }
 
         p.height += 10;
-
         view.setLayoutParams(p);
-
         mListView.addHeaderView(view);
 
+        // Set up Callback
         mListView.setOnTouchListener(this);
         mListView.setOnDismissCallback(new SwipeDismissListView.OnDismissCallback() {
 
@@ -147,8 +163,10 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         task.execute();
     }
 
-    private void refreshAllWeatherCard() {
-        new RefreshCardTask().execute();
+    private void refreshAllWeatherCard(boolean showToast) {
+        RefreshCardTask task = new RefreshCardTask();
+        task.showToast = showToast;
+        task.execute();
     }
 
     private void refreshListView() {
@@ -264,6 +282,8 @@ public class MainActivity extends Activity implements View.OnTouchListener {
 
     public class RefreshCardTask extends AsyncTask<Void, Void, WeatherList> {
 
+        public boolean showToast = false;
+
         @Override
         protected WeatherList doInBackground(Void... voids) {
             try {
@@ -280,7 +300,9 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         protected void onPostExecute(WeatherList wl) {
             if (wl != null) {
                 refreshListView();
-                mUIHandler.sendEmptyMessage(FIELD_REFERSH_FINISHED);
+                if (showToast) {
+                    mUIHandler.sendEmptyMessage(FIELD_REFRESH_FINISHED);
+                }
             }
         }
 
@@ -313,7 +335,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
                             Toast.LENGTH_SHORT)
                             .show();
                     break;
-                case FIELD_REFERSH_FINISHED:
+                case FIELD_REFRESH_FINISHED:
                     Toast.makeText(mContext,
                             mContext.getString(R.string.refresh_finished),
                             Toast.LENGTH_SHORT)
