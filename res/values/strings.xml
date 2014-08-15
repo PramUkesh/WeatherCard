@@ -2,6 +2,7 @@
 <resources>
 
     <string name="app_name">天气卡片</string>
+    <string name="item_settings">设置</string>
     <string name="search_hint">输入城市名称....</string>
     <string name="temperature_c">%s°C</string>
     <string name="refresh_date">%s 更新</string>
@@ -11,5 +12,24 @@
     <string-array name="card_more_menu">
         <item>刷新</item>
     </string-array>
+
+    <string name="footer_api_provider">天气数据由新浪提供</string>
+
+    <!-- Settings -->
+    <string name="category_ui_options">UI 界面</string>
+    <string name="title_swipe_back">滑动返回</string>
+    <string name="title_background">背景半透明</string>
+    <string name="category_app_info">关于应用</string>
+    <string name="title_version">版本号</string>
+    <string name="title_coder">码农</string>
+    <string name="title_paint">美工</string>
+    <string name="title_planner">策划</string>
+    <string name="title_light">灯光</string>
+    <string name="title_item">道具</string>
+    <string name="title_project_web">Github 项目地址</string>
+    <string name="author">Fython</string>
+    <string name="content_version_code">"%s "</string>
+    <string name="content_project_web">"http://github.com/fython/WeatherCard"</string>
+    <string name="need_restart">设置项将于重新打开应用后生效。</string>
 
 </resources>

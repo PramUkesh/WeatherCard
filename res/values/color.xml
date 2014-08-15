@@ -3,5 +3,6 @@
 
     <color name="transparent">#00000000</color>
     <color name="windowsTranslucentColor">#8fffffff</color>
+    <color name="windowsTranslucentColor_lighter">#e8ffffff</color>
 
 </resources>

@@ -40,7 +40,7 @@ public class Utility {
         return result;
     }
 
-    public static Drawable getWallpaperBackground(Context context) {
+    public static Drawable getWallpaperBackground(Context context, boolean isLighter) {
         WallpaperManager wm = WallpaperManager.getInstance(context);
         Drawable backgroundD = wm.getDrawable();
 
@@ -51,7 +51,9 @@ public class Utility {
         Bitmap bitmap = ((BitmapDrawable) backgroundD).getBitmap();
         Bitmap b = Bitmap.createBitmap(bitmap, 0, 0, dm.widthPixels, dm.heightPixels);
 
-        Drawable colorD = new ColorDrawable(context.getResources().getColor(R.color.windowsTranslucentColor));
+        Drawable colorD = new ColorDrawable(context.getResources().getColor(
+                isLighter ? R.color.windowsTranslucentColor_lighter : R.color.windowsTranslucentColor
+        ));
         Drawable[] arrD = new Drawable[] {new BitmapDrawable(b), colorD};
         LayerDrawable lD = new LayerDrawable(arrD);
         return lD;

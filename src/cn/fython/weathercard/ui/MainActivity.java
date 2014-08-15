@@ -2,8 +2,10 @@ package cn.fython.weathercard.ui;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -11,7 +13,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -19,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -31,6 +36,7 @@ import cn.fython.weathercard.data.DataHelper;
 import cn.fython.weathercard.data.Weather;
 import cn.fython.weathercard.data.WeatherList;
 import cn.fython.weathercard.support.CityNotFoundException;
+import cn.fython.weathercard.support.Settings;
 import cn.fython.weathercard.support.Utility;
 import cn.fython.weathercard.support.WeatherTools;
 import cn.fython.weathercard.support.adapter.CardAdapter;
@@ -49,6 +55,8 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
     private WeatherList mList;
     private DataHelper mDataHelper;
 
+    private Settings mSets;
+
     private float mLastY = -1.0f;
 
     public static final int FIELD_NULL = 0, FIELD_NETWORK_NULL = 1,
@@ -65,31 +73,42 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-        // Set up activity background
-        RelativeLayout l = (RelativeLayout) findViewById(R.id.layout_main);
-        Drawable backgroundRes = Utility.getWallpaperBackground(getApplicationContext());
-        if (Build.VERSION.SDK_INT >= 16) {
-            l.setBackground(backgroundRes);
-        } else {
-            l.setBackgroundDrawable(backgroundRes);
-        }
-
         // Init data
+        mSets = Settings.getInstance(getApplicationContext());
         mDataHelper = new DataHelper(getApplicationContext());
         mList = mDataHelper.readFromInternal();
         mUIHandler = new UIHandler(getApplicationContext());
 
         // Init UI
+        initBackground();
         initSwipeBackLayout();
         initActionBar();
         initListView();
+        refreshListView();
         refreshAllWeatherCard(false);
 
 	}
 
+    private void initBackground() {
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.layout_main);
+        if (mSets.getBoolean(Settings.Field.BACKGROUND, true)) {
+            Drawable backgroundRes = Utility.getWallpaperBackground(getApplicationContext(), false);
+            if (Build.VERSION.SDK_INT >= 16) {
+                l.setBackground(backgroundRes);
+            } else {
+                l.setBackgroundDrawable(backgroundRes);
+            }
+        } else {
+            l.setBackgroundColor(getResources().getColor(android.R.color.white));
+        }
+    }
+
     private void initSwipeBackLayout() {
         SwipeBackLayout swipeBackLayout = getSwipeBackLayout();
-        swipeBackLayout.setEdgeTrackingEnabled(SwipeBackLayout.EDGE_LEFT | SwipeBackLayout.EDGE_RIGHT);
+        swipeBackLayout.setEdgeTrackingEnabled(
+                mSets.getBoolean(Settings.Field.SWIPEBACK_ENABLED, true) ?
+                SwipeBackLayout.EDGE_LEFT | SwipeBackLayout.EDGE_RIGHT : 0
+        );
     }
 
     private void initActionBar() {
@@ -120,6 +139,31 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
             }
         });
 
+        ImageButton ib_settings = (ImageButton) v.findViewById(R.id.imageButton);
+        ib_settings.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent();
+                i.setAction(Intent.ACTION_MAIN);
+                i.setClass(MainActivity.this, SettingsActivity.class);
+                startActivity(i);
+            }
+
+        });
+        ib_settings.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Vibrator vibrator = (Vibrator) getSystemService(Service.VIBRATOR_SERVICE);
+                vibrator.vibrate(50);
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.item_settings),
+                        Toast.LENGTH_SHORT
+                ).show();
+                return true;
+            }
+        });
+
         ActionBar.LayoutParams layoutParams = new ActionBar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         actionBar.setCustomView(v, layoutParams);
@@ -142,6 +186,21 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
         p.height += 10;
         view.setLayoutParams(p);
         mListView.addHeaderView(view);
+
+        // Add footer to mListView
+        TextView tv = new TextView(this);
+        ListView.LayoutParams p0 = new ListView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        );
+
+        tv.setPadding(20, 20, 20, 20);
+        tv.setGravity(Gravity.RIGHT);
+        tv.setTextAppearance(getApplicationContext(), android.R.style.TextAppearance_Holo_Small_Inverse);
+        tv.setText(getString(R.string.footer_api_provider));
+
+        tv.setLayoutParams(p);
+        mListView.addFooterView(tv);
 
         // Set up Callback
         mListView.setOnTouchListener(this);

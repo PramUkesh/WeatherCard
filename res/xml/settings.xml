@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/category_ui_options">
+
+        <CheckBoxPreference android:key="swipeback_enabled" android:title="@string/title_swipe_back"/>
+        <CheckBoxPreference android:key="background" android:title="@string/title_background"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_app_info">
+
+        <Preference android:key="version" android:title="@string/title_version"/>
+
+        <Preference android:key="project_web"
+            android:title="@string/title_project_web"
+            android:summary="@string/content_project_web"/>
+
+        <!-- 我在卖萌别管我 -->
+        <Preference android:title="@string/title_coder" android:summary="@string/author"/>
+        <Preference android:title="@string/title_paint" android:summary="@string/author"/>
+        <Preference android:title="@string/title_planner" android:summary="@string/author"/>
+        <Preference android:title="@string/title_light" android:summary="@string/author"/>
+        <Preference android:title="@string/title_item" android:summary="@string/author"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

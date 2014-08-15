@@ -12,6 +12,7 @@
         android:id="@+id/listView"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"/>
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" />
+
 </RelativeLayout>
