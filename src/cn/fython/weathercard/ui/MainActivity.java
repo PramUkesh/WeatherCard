@@ -28,6 +28,7 @@ import android.widget.Toast;
 import java.io.IOException;
 
 import cn.fython.weathercard.R;
+import cn.fython.weathercard.data.DataHelper;
 import cn.fython.weathercard.data.Weather;
 import cn.fython.weathercard.data.WeatherList;
 import cn.fython.weathercard.support.CityNotFoundException;
@@ -45,6 +46,7 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     public static UIHandler mUIHandler;
 
     private WeatherList mList;
+    private DataHelper mDataHelper;
 
     private float mLastY = -1.0f;
 
@@ -69,20 +71,14 @@ public class MainActivity extends Activity implements View.OnTouchListener {
             l.setBackgroundDrawable(backgroundRes);
         }
 
-        mList = new WeatherList();
+        mDataHelper = new DataHelper(getApplicationContext());
+        mList = mDataHelper.readFromInternal();
         mUIHandler = new UIHandler(getApplicationContext());
 
         initActionBar();
         initListView();
-        refreshListView();
+        refreshAllWeatherCard();
 
-        /* Create sample cards */
-        createSampleWeatherCard("东莞");
-        createSampleWeatherCard("广州");
-        createSampleWeatherCard("北京");
-        createSampleWeatherCard("武汉");
-        createSampleWeatherCard("香港");
-        createSampleWeatherCard("惠州");
 	}
 
     private void initActionBar() {
@@ -151,6 +147,10 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         task.execute();
     }
 
+    private void refreshAllWeatherCard() {
+        new RefreshCardTask().execute();
+    }
+
     private void refreshListView() {
         mAdapter = new CardAdapter(
                 new ContextThemeWrapper(MainActivity.this, android.R.style.Theme_Holo_Light),
@@ -192,6 +192,12 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         }
 
         return false;
+    }
+
+    @Override
+    public void onPause() {
+        mDataHelper.saveToInternal(mList);
+        super.onPause();
     }
 
     private void showMoreMenu(final int position){
@@ -251,6 +257,30 @@ public class MainActivity extends Activity implements View.OnTouchListener {
                 data.putString("jsonString", weather.toJSONString());
                 msg.setData(data);
                 mUIHandler.sendMessage(msg);
+            }
+        }
+
+    }
+
+    public class RefreshCardTask extends AsyncTask<Void, Void, WeatherList> {
+
+        @Override
+        protected WeatherList doInBackground(Void... voids) {
+            try {
+                mList = mList.refreshAll();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (CityNotFoundException e) {
+                e.printStackTrace();
+            }
+            return mList;
+        }
+
+        @Override
+        protected void onPostExecute(WeatherList wl) {
+            if (wl != null) {
+                refreshListView();
+                mUIHandler.sendEmptyMessage(FIELD_REFERSH_FINISHED);
             }
         }
 

@@ -1,7 +1,5 @@
 package cn.fython.weathercard.data;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -78,7 +76,6 @@ public class WeatherList {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.i("WeatherList", jsonObj.toString());
         return jsonObj.toString();
     }
 
