@@ -61,6 +61,10 @@ public class SwipeDismissListView extends ListView {
      */
     private int mViewWidth;
     /**
+     * Header及Footer是否可以响应点击
+     */
+    private boolean headerClickable = true, footerClickable = true;
+    /**
      * 当ListView的Item滑出界面回调的接口
      */
     private OnDismissCallback onDismissCallback;
@@ -107,11 +111,13 @@ public class SwipeDismissListView extends ListView {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 handleActionDown(ev);
+                if (!getClickableByDownView()) return true;
                 break;
             case MotionEvent.ACTION_MOVE:
                 return handleActionMove(ev);
             case MotionEvent.ACTION_UP:
                 handleActionUp(ev);
+                if (!getClickableByDownView()) return true;
                 break;
         }
         return super.onTouchEvent(ev);
@@ -155,6 +161,8 @@ public class SwipeDismissListView extends ListView {
         if (mVelocityTracker == null || mDownView == null) {
             return super.onTouchEvent(ev);
         }
+
+        if (!getClickableByDownView()) return true;
 
         // 获取X方向滑动的距离
         float deltaX = ev.getX() - mDownX;
@@ -286,6 +294,24 @@ public class SwipeDismissListView extends ListView {
             }
         });
 
+    }
+
+    private boolean getClickableByDownView() {
+        boolean a = getPositionForView(mDownView) == 0 && !headerClickable;
+        boolean b = getPositionForView(mDownView) == getCount() - 1 && !footerClickable;
+        if (a || b) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public void setHeaderClickable(boolean b) {
+        headerClickable = b;
+    }
+
+    public void setFooterClickable(boolean b) {
+        footerClickable = b;
     }
 
     /**

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -25,7 +26,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +46,8 @@ import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
 public class MainActivity extends SwipeBackActivity implements View.OnTouchListener {
 
+    private static SwipeRefreshLayout mSwipeRefreshLayout;
+    private static SwipeBackLayout mSwipeBackLayout;
 	private static SwipeDismissListView mListView;
     private static EditText mSearchEditText;
     private static CardAdapter mAdapter;
@@ -79,8 +81,13 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
         mList = mDataHelper.readFromInternal();
         mUIHandler = new UIHandler(getApplicationContext());
 
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.layout_main);
+        mSwipeBackLayout = getSwipeBackLayout();
+        mListView = (SwipeDismissListView) findViewById(R.id.listView);
+
         // Init UI
         initBackground();
+        initSwipeRefreshLayout();
         initSwipeBackLayout();
         initActionBar();
         initListView();
@@ -90,22 +97,37 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 	}
 
     private void initBackground() {
-        RelativeLayout l = (RelativeLayout) findViewById(R.id.layout_main);
         if (mSets.getBoolean(Settings.Field.BACKGROUND, true)) {
             Drawable backgroundRes = Utility.getWallpaperBackground(getApplicationContext(), false);
             if (Build.VERSION.SDK_INT >= 16) {
-                l.setBackground(backgroundRes);
+                mSwipeRefreshLayout.setBackground(backgroundRes);
             } else {
-                l.setBackgroundDrawable(backgroundRes);
+                mSwipeRefreshLayout.setBackgroundDrawable(backgroundRes);
             }
         } else {
-            l.setBackgroundColor(getResources().getColor(android.R.color.white));
+            mSwipeRefreshLayout.setBackgroundColor(getResources().getColor(android.R.color.white));
         }
     }
 
+    private void initSwipeRefreshLayout() {
+        mSwipeRefreshLayout.setColorSchemeResources(
+                android.R.color.holo_green_dark,
+                android.R.color.holo_blue_dark,
+                android.R.color.holo_blue_light,
+                android.R.color.holo_blue_bright
+        );
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+
+            @Override
+            public void onRefresh() {
+                refreshAllWeatherCard(true);
+            }
+
+        });
+    }
+
     private void initSwipeBackLayout() {
-        SwipeBackLayout swipeBackLayout = getSwipeBackLayout();
-        swipeBackLayout.setEdgeTrackingEnabled(
+        mSwipeBackLayout.setEdgeTrackingEnabled(
                 mSets.getBoolean(Settings.Field.SWIPEBACK_ENABLED, true) ?
                 SwipeBackLayout.EDGE_LEFT | SwipeBackLayout.EDGE_RIGHT : 0
         );
@@ -170,8 +192,6 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
     }
 
     private void initListView() {
-        mListView = (SwipeDismissListView) findViewById(R.id.listView);
-
         // Add header to mListView
         View view = new View(this);
         ListView.LayoutParams p = new ListView.LayoutParams(
@@ -186,6 +206,7 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
         p.height += 10;
         view.setLayoutParams(p);
         mListView.addHeaderView(view);
+        mListView.setHeaderClickable(false);
 
         // Add footer to mListView
         TextView tv = new TextView(this);
@@ -201,6 +222,7 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 
         tv.setLayoutParams(p);
         mListView.addFooterView(tv);
+        mListView.setFooterClickable(false);
 
         // Set up Callback
         mListView.setOnTouchListener(this);
@@ -357,6 +379,7 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 
         @Override
         protected void onPostExecute(WeatherList wl) {
+            mSwipeRefreshLayout.setRefreshing(false);
             if (wl != null) {
                 refreshListView();
                 if (showToast) {
