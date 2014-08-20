@@ -297,12 +297,20 @@ public class SwipeDismissListView extends ListView {
     }
 
     private boolean getClickableByDownView() {
-        boolean a = getPositionForView(mDownView) == 0 && !headerClickable;
-        boolean b = getPositionForView(mDownView) == getCount() - 1 && !footerClickable;
-        if (a || b) {
+        if (mDownView == null) {
             return false;
-        } else {
-            return true;
+        }
+        try {
+            boolean a = getPositionForView(mDownView) == 0 && !headerClickable;
+            boolean b = getPositionForView(mDownView) == getCount() - 1 && !footerClickable;
+            if (a || b) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (NullPointerException e) {
+            // 好烦啊 直接catch了
+            return false;
         }
     }
 

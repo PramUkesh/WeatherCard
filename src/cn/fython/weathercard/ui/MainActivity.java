@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.os.Vibrator;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.ContextThemeWrapper;
@@ -28,6 +29,8 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.cocosw.undobar.UndoBarController;
 
 import java.io.IOException;
 
@@ -230,8 +233,24 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 
             @Override
             public void onDismiss(int dismissPosition) {
+                final Bundle b = new Bundle();
+                b.putInt("index", dismissPosition - 1);
+                b.putString("data", mList.get(dismissPosition - 1).toJSONString());
                 mList.remove(dismissPosition - 1);
                 refreshListView();
+                UndoBarController.show(
+                        MainActivity.this,
+                        getString(R.string.deleted),
+                        new UndoBarController.UndoListener() {
+                            @Override
+                            public void onUndo(Parcelable b) {
+                                Weather w = new Weather(((Bundle) b).getString("data"));
+                                mList.add(((Bundle) b).getInt("index", 0), w);
+                                refreshListView();
+                            }
+                        },
+                        b
+                );
             }
 
         });
@@ -276,7 +295,7 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
 
                 float y = ev.getY();
 
-                if (y < mLastY - 10f) {
+                if (y < mLastY - 10f && mListView.getFirstVisiblePosition() >= 1) {
                     getActionBar().hide();
                 } else if (y > mLastY + 10f) {
                     getActionBar().show();

@@ -32,6 +32,10 @@ public class WeatherList {
         array.add(w);
     }
 
+    public void add(int index, Weather w) {
+        array.add(index, w);
+    }
+
     public void set(int position, Weather w) {
         array.set(position, w);
     }
