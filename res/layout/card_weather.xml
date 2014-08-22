@@ -107,6 +107,13 @@
         <ImageButton
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:id="@+id/ib_view"
+            android:src="@android:drawable/ic_menu_view"
+            android:background="@drawable/btn_more_bg" />
+
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:id="@+id/ib_more"
             android:src="@drawable/ic_btn_more"
             android:background="@drawable/btn_more_bg" />

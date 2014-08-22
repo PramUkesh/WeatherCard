@@ -16,6 +16,9 @@
 
     <string name="footer_api_provider">天气数据由新浪提供</string>
 
+    <!-- DetailActivity -->
+    <string name="tv_content">"%1$s\n\n最高温度：%2$s\n最低温度：%3$s\n风力：%4$s\n风向：%5$s\n\n紫外线指数：%6$s\n污染指数：%7$s\n"</string>
+
     <!-- Settings -->
     <string name="category_ui_options">UI 界面</string>
     <string name="title_swipe_back">滑动返回</string>

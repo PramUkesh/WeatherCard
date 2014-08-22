@@ -17,14 +17,17 @@ public class CardAdapter extends BaseAdapter {
 
     private WeatherList mList;
     private OnMoreButtonClickListener onMoreButtonClickListener;
+    private OnViewButtonClickListener onViewButtonClickListener;
 
     private Context mContext;
 
     public CardAdapter(Context context, WeatherList weatherList,
-                       OnMoreButtonClickListener onMoreButtonClickListener) {
+                       OnMoreButtonClickListener onMoreButtonClickListener,
+                       OnViewButtonClickListener onViewButtonClickListener) {
         mContext = context;
         mList = weatherList;
         this.onMoreButtonClickListener = onMoreButtonClickListener;
+        this.onViewButtonClickListener = onViewButtonClickListener;
     }
 
     @Override
@@ -78,6 +81,16 @@ public class CardAdapter extends BaseAdapter {
                 }
 
             });
+            view.findViewById(R.id.ib_view).setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    if (onViewButtonClickListener != null) {
+                        onViewButtonClickListener.onViewButtonClick(i);
+                    }
+                }
+
+            });
 
             view.setTag(mHolder);
         } else {
@@ -121,6 +134,10 @@ public class CardAdapter extends BaseAdapter {
 
     public interface OnMoreButtonClickListener {
         public void onMoreButtonClick(int position);
+    }
+
+    public interface OnViewButtonClickListener {
+        public void onViewButtonClick(int position);
     }
 
 }

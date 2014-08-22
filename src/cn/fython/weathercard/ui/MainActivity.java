@@ -278,6 +278,15 @@ public class MainActivity extends SwipeBackActivity implements View.OnTouchListe
                     public void onMoreButtonClick(int position) {
                         showMoreMenu(position);
                     }
+                },
+                new CardAdapter.OnViewButtonClickListener() {
+                    @Override
+                    public void onViewButtonClick(int position) {
+                        Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                        intent.putExtra("index", position);
+                        startActivity(intent);
+                    }
                 }
         );
         mListView.setAdapter(mAdapter);
